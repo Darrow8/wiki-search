@@ -25,19 +25,37 @@ export class HomePage implements OnInit {
     console.log('Nelson Mandela Page added!')
     console.log(this.pageArr);
 
-    let ret = await this.getPage(this.pageArr[0]);
-    console.log(ret)
-    // for (let i = 0; i < 3; i++) {
-    //   let newLink = await this.getPage(this.pageArr[i]);
-    //   this.pageArr.push(newLink);
+    for (let i = 0; i < 15; i++) {
+      // * anti-clogging methods
+      let isClogged = false;
+      if (i >= 6) {
+        console.log('clog searching!')
+        // * level 1 clog
+        if (this.pageArr[i] == this.pageArr[i - 1]) {
+          // * same article over and over again
+          console.log('level 1 clog!')
+          isClogged = true;
+        }
+        // * level 2 clog
+        if (this.pageArr[i] == this.pageArr[i - 2]) {
+          // * same 2 articles over and over again
+          console.log('level 2 clog!')
+          isClogged = true;
 
-    //   // // * anti-clogging methods
-    //   // if (i > 3) {
-    //   //   if (this.pageArr[i - 4] == )
-    //   // }
+        }
+        // * level 2 clog
+        if (this.pageArr[i] == this.pageArr[i - 3]) {
+          // * same 3 articles over and over again
+          console.log('level 3 clog!')
+          isClogged = true;
+        }
 
-    //   console.log(this.pageArr);
-    // }
+      }
+      let newLink = await this.getPage(this.pageArr[i],isClogged);
+      this.pageArr.push(newLink);
+      isClogged = false;
+      console.log(this.pageArr);
+    }
 
     
 
@@ -48,62 +66,30 @@ export class HomePage implements OnInit {
     return str.substr(0,cutStart) + str.substr(cutEnd+1);
   }
 
-  async getPage(page: string){
-    // let req = await fetch('https://cors-anywhere.herokuapp.com/' + this.baseLink + '&page=' + page)
-    // return await req.json().then((data) => {
-    // return (() => {
-
-      let html: string; //= data['parse']['text'];
-      html = `
-      <html>
-        good1
-        <table>
-          bad2
-        </table>
-        good3
-        <table>
-          bad4
-        </table>
-        good5
-        <table>
-          bad6
-          <table>
-            bad7
-            <table>
-              bad8
-            </table>
-            bad9
-          </table>
-          bad10
-        </table>
-        good11
-        <table>
-          bad12
-          <table>
-            bad13
-          </table>
-          bad14
-        </table>
-        good15
-      </html>
-      `
+  async getPage(page: string, clogged: boolean){
+    let req = await fetch('https://cors-anywhere.herokuapp.com/' + this.baseLink + '&page=' + page)
+    return await req.json().then((data) => {
+      let html: string = data['parse']['text'];
 
       let finalVal: string;
       // * filter system
       let filterList = [
         {
+          start: '<table',
+          end: '</table>'
+        },
+        {
           start: '<div role="note"',
           end: '</div>'
         },
         {
-          start: '<table>',
-          end: '</table>'
+          start: '<div class="thumb',
+          end: '</div>'
         },
         
       ]
 
 
-      console.log('BEFORE: ' + html);
 
     filterList.forEach((exception) => {
       let limit = 0;
@@ -112,8 +98,6 @@ export class HomePage implements OnInit {
           if (limit > 100) {
             break;
           }
-        console.log('filtering')
-        console.log('DURING: ' + html)
           limit++;
           let startPoint = html.indexOf(exception.start)
           let endPoint;
@@ -125,7 +109,6 @@ export class HomePage implements OnInit {
             // * there is another start tag before the end tag -- pyramid
             if (possible2 != -1) {
 
-              console.log('PYRAMID')
               // * skip until we get to the end of the pyramid
               let currentPos = possible2 + exception.start.length;
               // * the number of layers in our pyramid that we've gone up
@@ -144,18 +127,13 @@ export class HomePage implements OnInit {
                   if (findEnd == -1) {
                     // * no more end tags, we are done
                     break;
-                  } else {
-                    console.log('on last pyramid!')
                   }
                 }
-              
-                console.log(`findEnd: ${findEnd}`)
-                console.log(`findStart: ${findStart}`)
+
                 if (findStart < findEnd && findStart != -1) {
                   // * while we are still going up the pyramid (hitting starts)
                   countOfLayers++;
                   currentPos = findStart + exception.start.length;
-                  console.log(`up a layer! Now to ${countOfLayers} layers and index ${currentPos}`)
                   limit++;
                 }
   
@@ -165,10 +143,8 @@ export class HomePage implements OnInit {
                   currentPos = findEnd + exception.end.length;
                   if (countOfLayers == 0) {
                     endPoint = currentPos;
-                    console.log('ENDPOINT SET!')
                     break;
                   }  
-                  console.log(`down a layer! Now to ${countOfLayers} layers and index ${currentPos}`)
                   limit++;
                 }
             
@@ -178,8 +154,6 @@ export class HomePage implements OnInit {
               // endPoint = possible2
 
             } else {
-              console.log('NO MORE START TAGS?')
-              console.log('CHECK: ' + html);
               endPoint = possible1
             }
 
@@ -189,20 +163,11 @@ export class HomePage implements OnInit {
           } else {
             // * there is a end tag before the start tag -- normal
             if (possible1 == -1) {
-              console.log('NO MORE END TAGS?')
-              console.log('CHECK: ' + html);
               endPoint = possible2
             } else {
-              console.log('NORMAL')
               endPoint = possible1 + exception.end.length
             }
           }
-
-          console.log(`possible1: ${html.indexOf(exception.start, startPoint + exception.start.length)}`)
-          console.log(`possible2: ${html.indexOf(exception.end, startPoint + exception.start.length)}`)
-
-          console.log(`Start point: ${startPoint}`)
-          console.log(`End point: ${endPoint}`)
           html = this.cut(html, startPoint, endPoint)
         }
 
@@ -216,21 +181,28 @@ export class HomePage implements OnInit {
 
 
 
-      // let splitList = html.split('<a href="/wiki/')
+      let splitList = html.split('<a href="/wiki/')
 
-      // splitList.shift();
-      // for(let string of splitList){
-      //   let link = string.split('"')
-      //   if (link[0].includes('Help:') || link[0].includes('(disambiguation)') || link[0].includes('File:') || link[0].includes('Wikipedia:') || link[0].includes('Template:')) {
-      //     // console.log(`bad! ${link[0]}`)
-      //   } else {
-      //     // console.log(`found! ${link[0]}`)
-      //     finalVal = link[0];
-      //     break;
-      //   }
+      splitList.shift();
 
-      // }
+      if (clogged) { 
+        // * shift 2 more times to get rid of junk
+        splitList.shift();
+        splitList.shift();
+
+      }
+
+      for(let string of splitList){
+        let link = string.split('"')
+        if (link[0].includes('Help:') || link[0].includes('(disambiguation)') || link[0].includes('File:') || link[0].includes('Wikipedia:') || link[0].includes('Template:')) {
+        } else {
+
+          finalVal = link[0];
+          break;
+        }
+
+      }
       return finalVal;
-    // })  
+    })  
   }
 }
