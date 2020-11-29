@@ -1,5 +1,5 @@
 
-# wiki-Search
+# Wiki-Search
 This web-app acts as a Wikipedia web-crawler that clicks on the first link for any given page until it reaches a loop. It filters through problematic pages that causes errors on other wiki-searchers. 
 
 
