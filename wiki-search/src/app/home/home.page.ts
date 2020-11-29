@@ -1,3 +1,4 @@
+import { start } from 'repl';
 import { Component, OnInit } from '@angular/core';
 
 
@@ -21,7 +22,7 @@ export class HomePage implements OnInit {
   async ngOnInit() {
     // * init page
     // * next: Aleph_number#Aleph-one
-    this.pageArr.push('Nelson_Mandela')
+    this.pageArr.push('Broccoli')
     console.log('First Page added!')
     console.log(this.pageArr);
     await this.requestList();
@@ -41,13 +42,11 @@ export class HomePage implements OnInit {
     let count = 0;
     let limit = 500;
     let clogged = false;
-    console.log('here!')
     while (clogged == false && count < limit) {
       // * add new link
       console.log(this.pageArr[this.pageArr.length-1])
 
       let newLink = await this.getPage(this.pageArr[this.pageArr.length-1]);
-      console.log('here3!')
       if (this.pageArr.includes(newLink)) {
         //* Already has it
         clogged = true;
@@ -61,52 +60,6 @@ export class HomePage implements OnInit {
       console.log('You have finished! You have reached a clog, start again')
       console.log(`Your total number is ${this.pageArr.length}`)
     }
-
-
-        // for (let i = startPoint; i < count + startPoint; i++) {
-          // * anti-clogging methods
-          // let isClogged = false;
-
-
-          
-          // if (i >= 6) {
-          //   console.log('clog searching!')
-            // // * level 1 clog
-            // if (this.pageArr[i] == this.pageArr[i - 1]) {
-            //   // * same article over and over again
-            //   console.log('level 1 clog!')
-            //   isClogged = true;
-            // }
-            // // * level 2 clog
-            // if (this.pageArr[i] == this.pageArr[i - 2]) {
-            //   // * same 2 articles over and over again
-            //   console.log('level 2 clog!')
-            //   isClogged = true;
-    
-            // }
-            // // * level 3 clog
-            // if (this.pageArr[i] == this.pageArr[i - 3]) {
-            //   // * same 3 articles over and over again
-            //   console.log('level 3 clog!')
-            //   isClogged = true;
-            // }
-    
-
-            
-
-            // // * more advanced clog methods
-    
-            // if (this.pageArr.includes(this.pageArr[i-1])) {
-            //   console.log('advanced level clog!')
-            //   this.pageArr.pop();
-            //   isClogged = true;
-            // }
-    
-          // }
-
-          // isClogged = false;
-        //   console.log(this.pageArr);
-        // }
   }
 
 
@@ -147,13 +100,33 @@ export class HomePage implements OnInit {
           if (limit > 100) {
             break;
           }
-          limit++;
+        limit++;
+        let shouldCut = true;
           let startPoint = html.indexOf(exception.start)
           let endPoint;
           // * for indexing possible endPoints
           let possible1 = html.indexOf(exception.end, startPoint + exception.start.length);
           let possible2 = html.indexOf(exception.start, startPoint + exception.start.length);
 
+          // * make an exception for parenthesis
+        if (exception.start == "(") {
+          console.log("in right area")
+          if (possible1 < possible2) {
+            console.log("end is closer")
+            let hasIt = html.substring(startPoint, possible1)
+            console.log(hasIt)
+            if (hasIt.includes(" ") || hasIt.includes("<")) {
+              // * problematic
+            } else {
+              // * we good!
+              // alert('here!')
+              console.log('we major!')
+              shouldCut = false;
+            }
+          }
+        }
+        
+        
           if (possible1 > possible2) {
             // * there is another start tag before the end tag -- pyramid
             if (possible2 != -1) {
@@ -217,7 +190,11 @@ export class HomePage implements OnInit {
               endPoint = possible1 + exception.end.length
             }
           }
+        if (shouldCut) {
           html = this.cut(html, startPoint, endPoint)
+        } else {
+          shouldCut = true;
+        }
         }
 
 
