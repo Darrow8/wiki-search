@@ -13,8 +13,18 @@
     </ion-toolbar>
   </ion-header>
 
-  
-  
+  <ion-list>
+    <ion-item *ngFor="let page of this.pageArr">
+      {{page}}
+    </ion-item>
+  </ion-list>  
+  <ion-infinite-scroll (ionInfinite)="this.loadMore($event)">
+    <ion-infinite-scroll-content
+    
+      loadingSpinner="bubbles"
+      loadingText="Loading more data…">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
 
 

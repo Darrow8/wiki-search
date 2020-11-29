@@ -13,60 +13,105 @@ export class HomePage implements OnInit {
   
 
   // * list of pages
-  private pageArr = []; 
+  public pageArr = []; 
 
   constructor() {}
 
 
   async ngOnInit() {
-
     // * init page
+    // * next: Aleph_number#Aleph-one
     this.pageArr.push('Nelson_Mandela')
-    console.log('Nelson Mandela Page added!')
+    console.log('First Page added!')
     console.log(this.pageArr);
+    await this.requestList();
+  }
 
-    for (let i = 0; i < 15; i++) {
-      // * anti-clogging methods
-      let isClogged = false;
-      if (i >= 6) {
-        console.log('clog searching!')
-        // * level 1 clog
-        if (this.pageArr[i] == this.pageArr[i - 1]) {
-          // * same article over and over again
-          console.log('level 1 clog!')
-          isClogged = true;
-        }
-        // * level 2 clog
-        if (this.pageArr[i] == this.pageArr[i - 2]) {
-          // * same 2 articles over and over again
-          console.log('level 2 clog!')
-          isClogged = true;
-
-        }
-        // * level 2 clog
-        if (this.pageArr[i] == this.pageArr[i - 3]) {
-          // * same 3 articles over and over again
-          console.log('level 3 clog!')
-          isClogged = true;
-        }
-
-      }
-      let newLink = await this.getPage(this.pageArr[i],isClogged);
-      this.pageArr.push(newLink);
-      isClogged = false;
-      console.log(this.pageArr);
-    }
-
-    
-
-
+  async loadMore() {
+    await this.requestList();
   }
 
   cut(str, cutStart, cutEnd){
     return str.substr(0,cutStart) + str.substr(cutEnd+1);
   }
 
-  async getPage(page: string, clogged: boolean){
+
+  async requestList() {
+    let startPoint = this.pageArr.length - 1
+    let count = 0;
+    let limit = 500;
+    let clogged = false;
+    console.log('here!')
+    while (clogged == false && count < limit) {
+      // * add new link
+      console.log(this.pageArr[this.pageArr.length-1])
+
+      let newLink = await this.getPage(this.pageArr[this.pageArr.length-1]);
+      console.log('here3!')
+      if (this.pageArr.includes(newLink)) {
+        //* Already has it
+        clogged = true;
+        break;
+      }
+      this.pageArr.push(newLink);
+      count++;
+    }
+
+    if (clogged) {
+      console.log('You have finished! You have reached a clog, start again')
+      console.log(`Your total number is ${this.pageArr.length}`)
+    }
+
+
+        // for (let i = startPoint; i < count + startPoint; i++) {
+          // * anti-clogging methods
+          // let isClogged = false;
+
+
+          
+          // if (i >= 6) {
+          //   console.log('clog searching!')
+            // // * level 1 clog
+            // if (this.pageArr[i] == this.pageArr[i - 1]) {
+            //   // * same article over and over again
+            //   console.log('level 1 clog!')
+            //   isClogged = true;
+            // }
+            // // * level 2 clog
+            // if (this.pageArr[i] == this.pageArr[i - 2]) {
+            //   // * same 2 articles over and over again
+            //   console.log('level 2 clog!')
+            //   isClogged = true;
+    
+            // }
+            // // * level 3 clog
+            // if (this.pageArr[i] == this.pageArr[i - 3]) {
+            //   // * same 3 articles over and over again
+            //   console.log('level 3 clog!')
+            //   isClogged = true;
+            // }
+    
+
+            
+
+            // // * more advanced clog methods
+    
+            // if (this.pageArr.includes(this.pageArr[i-1])) {
+            //   console.log('advanced level clog!')
+            //   this.pageArr.pop();
+            //   isClogged = true;
+            // }
+    
+          // }
+
+          // isClogged = false;
+        //   console.log(this.pageArr);
+        // }
+  }
+
+
+
+  async getPage(page: string){
     let req = await fetch('https://cors-anywhere.herokuapp.com/' + this.baseLink + '&page=' + page)
     return await req.json().then((data) => {
       let html: string = data['parse']['text'];
@@ -85,6 +130,10 @@ export class HomePage implements OnInit {
         {
           start: '<div class="thumb',
           end: '</div>'
+        },
+        {
+          start: '(',
+          end: ')'
         },
         
       ]
@@ -185,12 +234,11 @@ export class HomePage implements OnInit {
 
       splitList.shift();
 
-      if (clogged) { 
-        // * shift 2 more times to get rid of junk
-        splitList.shift();
-        splitList.shift();
-
-      }
+      // if (clogged) { 
+      //   // * shift random times to get rid of junk
+      //     splitList.shift();
+      //     splitList.shift();
+      // }
 
       for(let string of splitList){
         let link = string.split('"')
