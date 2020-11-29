@@ -12,8 +12,15 @@
       <ion-title size="large">Wiki-Search</ion-title>
     </ion-toolbar>
   </ion-header>
-
-  <ion-list>
+  <ion-searchbar (input)="this.search($event)" placeholder="Search A Wikipedia Page">
+  </ion-searchbar>
+  <ion-list autocorrect="on" id="search-list">
+    <ion-item *ngFor="let result of this.searchAutocorrect">
+      {{result}}
+    </ion-item>
+  </ion-list>
+  
+  <ion-list id="query-list">
     <ion-item *ngFor="let page of this.pageArr">
       {{page}}
     </ion-item>

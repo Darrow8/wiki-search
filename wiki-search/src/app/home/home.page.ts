@@ -1,4 +1,3 @@
-import { start } from 'repl';
 import { Component, OnInit } from '@angular/core';
 
 
@@ -15,21 +14,67 @@ export class HomePage implements OnInit {
 
   // * list of pages
   public pageArr = []; 
+  // * the query the user is searching
+  public unfilteredSearch = "";
+  public searchAutocorrect = [];
 
   constructor() {}
 
 
   async ngOnInit() {
     // * init page
-    // * next: Aleph_number#Aleph-one
-    this.pageArr.push('Broccoli')
-    console.log('First Page added!')
-    console.log(this.pageArr);
-    await this.requestList();
+    // this.pageArr.push('The_Nueva_School')
+    // console.log('First Page added!')
+    // console.log(this.pageArr);
+    // await this.requestList();
+  }
+
+  search(event: InputEvent) {
+    // * code from: https://www.mediawiki.org/wiki/API:Prefixsearch
+    /*
+        prefixsearch.js
+
+        MediaWiki API Demos
+        Demo of `Prefixsearch` module: Perform a prefix search for page titles
+
+        MIT License
+    */
+    if (event.data == null) {
+      // * deleted character
+      // * thanks https://stackoverflow.com/questions/952924/javascript-chop-slice-trim-off-last-character-in-string
+      this.unfilteredSearch = this.unfilteredSearch.slice(0, -1); 
+
+    } else {
+      this.unfilteredSearch += event.data;
+    }
+
+    var url = "https://en.wikipedia.org/w/api.php"; 
+
+    var params = {
+        action: "query",
+        list: "prefixsearch",
+        pssearch: this.unfilteredSearch,
+        format: "json"
+    };
+
+    url = url + "?origin=*";
+    Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
+
+    fetch(url)
+        .then(function(response){return response.json();})
+      .then((response) => {
+        this.searchAutocorrect = [];
+        var pages = response.query.prefixsearch;
+        for (var page in pages) {
+          console.log(pages[page].title);
+          this.searchAutocorrect.push(pages[page].title);
+        }
+        })
+        .catch(function(error){console.log(error);});
   }
 
   async loadMore() {
-    await this.requestList();
+    // await this.requestList();
   }
 
   cut(str, cutStart, cutEnd){
@@ -48,6 +93,7 @@ export class HomePage implements OnInit {
 
       let newLink = await this.getPage(this.pageArr[this.pageArr.length-1]);
       if (this.pageArr.includes(newLink)) {
+        this.pageArr.pop();
         //* Already has it
         clogged = true;
         break;
