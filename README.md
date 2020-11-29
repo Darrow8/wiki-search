@@ -8,7 +8,7 @@ Simply search any keyword that has a wikipedia page attached to it and this web-
 
 
 ## The Philosophy Phenomenon
-It has been found that for virtually every page in Wikiepdia (~97%) eventually lead to philosophy. Which is pretty neat and *philisophical* in itself. The remaining ~3% go to pages without any links or they end up in an infinite loop. Philosophy ends up 
+It has been found that for virtually every page in Wikiepdia (~97%) eventually lead to philosophy. Which is pretty neat and *philisophical* in itself. The remaining ~3% go to pages without any links or they end up in an infinite loop. Philosophy ends up going to metaphysics which creates a loop between the two.
 
 Find more on this topic here: https://en.wikipedia.org/wiki/Wikipedia:Getting_to_Philosophy
 
